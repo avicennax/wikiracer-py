@@ -52,7 +52,7 @@ def collect_wiki_links(page: str):
         if link.has_attr('href'):
             if link['href'].startswith('/wiki/'):
                 links.add(link['href'])
-    return list(links)
+    return links
 
 
 def check_links(start_stub: str, end_stub: str):
@@ -77,6 +77,10 @@ def check_links(start_stub: str, end_stub: str):
 
 
 def main_loop(start_suffix: str, end_suffix: str):
+    """Core control loop for fetching, scraping,
+    checking and filtering URLs.
+    """
+    # Initialize pool of workers for fetching and scraping URLs.
     pool = Pool(processes=4)
     # Initialize checker coroutine and URLs/pages collections
     checker = check_links(start_suffix, end_suffix)
@@ -120,4 +124,4 @@ def build_parser():
 if __name__ == "__main__":
     parser = build_parser()
     cli_args = parser.parse_args()
-    main_loop()
+    main_loop(cli_args.start_suffix, cli_args.end_suffix)
