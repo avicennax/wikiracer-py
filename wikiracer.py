@@ -13,14 +13,15 @@ import socket
 from bs4 import BeautifulSoup, SoupStrainer
 
 WIKI_URL = 'https://en.wikipedia.org'
+THREAD_NUM = 512
 
 
 class Collection(object):
     """Lightweight wrapper around an arbitrary iterable.
 
     Update interface enables one-line re-assignment to
-    underlying iterable while maintaining a reference to
-    wrapper; useful for preserving references.
+    underlying iterable; useful for preserving references
+    to the wrapper.
     """
     def __init__(self, iterable=None):
         if iterable is None:
@@ -94,7 +95,7 @@ def main_loop(start_suffix: str, end_suffix: str):
     ]
     while True:
         # Fetch pages for URLs, and then scrape new URLs from those pages
-        with futures.ThreadPoolExecutor(64) as executor:
+        with futures.ThreadPoolExecutor(THREAD_NUM) as executor:
             for func, in_collection, out_collection in fetch_scrape_flow:
                 res = executor.map(func, in_collection)
                 out_collection.update(list(res))
