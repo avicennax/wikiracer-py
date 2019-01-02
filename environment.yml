@@ -1,0 +1,7 @@
+name: wikiracer
+dependencies:
+ - python=3.6.2
+ - bs4
+ - pip
+ - pip:
+   - celery
