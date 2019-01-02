@@ -5,9 +5,10 @@ wikiracer.py -
 Finds the shortest link between two Wikipedia articles.
 """
 import argparse
+from concurrent import futures
 from itertools import chain
-from multiprocessing import Pool
 import urllib.request
+import socket
 
 from bs4 import BeautifulSoup, SoupStrainer
 
@@ -24,7 +25,8 @@ class Collection(object):
     def __init__(self, iterable=None):
         if iterable is None:
             self._container = []
-        self._container = iterable
+        else:
+            self._container = iterable
 
     def update(self, new_values):
         self._container = new_values
@@ -39,8 +41,8 @@ class Collection(object):
 def fetch_url(url: str) -> str:
     """Fetch URL contents and return raw HTML page."""
     try:
-        return urllib.request.urlopen(url, timeout=2).read().decode('utf-8')
-    except urllib.error.HTTPError:
+        return urllib.request.urlopen(url, timeout=3).read().decode('utf-8')
+    except (urllib.error.HTTPError, socket.timeout, urllib.error.URLError):
         return ''
 
 
@@ -80,9 +82,7 @@ def main_loop(start_suffix: str, end_suffix: str):
     """Core control loop for fetching, scraping,
     checking and filtering URLs.
     """
-    # Initialize pool of workers for fetching and scraping URLs.
-    pool = Pool(processes=4)
-    # Initialize checker coroutine and URLs/pages collections
+    # # Initialize checker coroutine and URLs/pages collections
     checker = check_links(start_suffix, end_suffix)
     urls = Collection(next(checker))
     pages = Collection()
@@ -94,10 +94,10 @@ def main_loop(start_suffix: str, end_suffix: str):
     ]
     while True:
         # Fetch pages for URLs, and then scrape new URLs from those pages
-        for func, in_collection, out_collection in fetch_scrape_flow:
-            handler = pool.map_async(func, in_collection)
-            handler.wait()
-            out_collection.update(handler.get())
+        with futures.ThreadPoolExecutor(64) as executor:
+            for func, in_collection, out_collection in fetch_scrape_flow:
+                res = executor.map(func, in_collection)
+                out_collection.update(list(res))
         try:
             # Check new URLs to see if the target URL has been
             # scraped. If not, yield unseen, ready to fetch URLs.
