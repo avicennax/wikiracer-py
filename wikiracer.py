@@ -13,7 +13,7 @@ import socket
 from bs4 import BeautifulSoup, SoupStrainer
 
 WIKI_URL = 'https://en.wikipedia.org'
-THREAD_NUM = 512
+THREAD_NUM = 1028
 
 
 class Collection(object):
