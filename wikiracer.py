@@ -76,7 +76,7 @@ def check_links(start_stub: str, end_stub: str):
         depth_counter += 1
         new_urls -= seen_urls
         seen_urls |= new_urls
-        urls_to_scrape = list(map(lambda u: "".join([WIKI_URL, u]), new_urls))
+        urls_to_scrape = ["".join([WIKI_URL, u]) for u in new_urls]
 
 
 def main_loop(start_suffix: str, end_suffix: str):
